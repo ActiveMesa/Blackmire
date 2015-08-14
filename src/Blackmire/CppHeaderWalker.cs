@@ -27,11 +27,11 @@ namespace Blackmire
 
     public override void VisitUsingDirective(UsingDirectiveSyntax node)
     {
-     
+
       // these could theoretically be acquired by indexing the GAC or something
       var namespaces = new List<String>
       {
-        "System", 
+        "System",
         "System.Collections",
         "System.Collections.Generic",
         "System.Text",
@@ -103,8 +103,10 @@ namespace Blackmire
 
         builder.Append("> ");
       }
-      
+
       builder.Append("virtual ", parentIsInterface || s.IsVirtual);
+      builder.Append("static ", s.IsStatic);
+
       builder.Append(node.ReturnType.ToString());
       builder.Append(" ");
       builder.Append(node.Identifier.ToString());
@@ -189,21 +191,37 @@ namespace Blackmire
         tcb.Top.Append("> ");
       }
 
-      tcb.Top.Append("class " + node.Identifier).AppendLine(" { ");
+      tcb.Top.Append("class " + node.Identifier);
+
+      // here comes the tricky part: base class declarations
+      if (node.BaseList != null)
+      {
+        var types = node.BaseList.Types;
+        for (int i = 0; i < types.Count; ++i)
+        {
+          var t = types[i];
+          if (i == 0) tcb.Top.Append(" : ");
+          tcb.Top.Append("public ").Append(t.Type.ToString());
+          if (i + 1 != types.Count)
+            tcb.Top.Append(", ");
+        }
+      }
+
+      tcb.Top.AppendLine(" { ");
 
       if (node is ClassDeclarationSyntax)
       {
-        var cds = (ClassDeclarationSyntax) node;
+        var cds = (ClassDeclarationSyntax)node;
         base.VisitClassDeclaration(cds);
 
         if (cds.HasInitializableMembers(model) && !cds.HasDefaultConstructor())
         {
           tcb.Public.AppendLineWithIndent(cds.Identifier + "();");
         }
-      } 
+      }
       else if (node is InterfaceDeclarationSyntax)
       {
-        var ids = (InterfaceDeclarationSyntax) node;
+        var ids = (InterfaceDeclarationSyntax)node;
         base.VisitInterfaceDeclaration(ids);
       }
       tcb.Bottom.AppendLineWithIndent("};");
@@ -225,7 +243,7 @@ namespace Blackmire
           if (z.IsConst || z.IsReadOnly) builder.Append("const ");
           if (z.IsStatic) builder.Append("static ");
           builder.Append(cppType).Append(" ").Append(v.Identifier.ToString());
-            
+
           // since this is C++11, we can add init for primitive numeric types
           var defType = z.Type.GetDefaultValue();
           if (defType != null)

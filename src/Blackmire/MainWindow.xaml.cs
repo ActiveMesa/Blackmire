@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -86,6 +87,24 @@ namespace Blackmire
       var iw = new CppImplWalker(compilation, model, settings);
       iw.Visit(tree.GetRoot());
       CppBox.Text = iw.ToString();
+    }
+
+    private void InputDrop(object sender, DragEventArgs e)
+    {
+      if (e.Data.GetDataPresent(DataFormats.FileDrop))
+      {
+        string[] files = (string[]) e.Data.GetData(DataFormats.FileDrop);
+        if (files != null && files.Any())
+        {
+          var theFile = files[0];
+          ((TextBox) sender).Text = File.ReadAllText(theFile);
+        }
+      }
+    }
+
+    private void InputDragOver(object sender, DragEventArgs e)
+    {
+      e.Handled = true;
     }
   }
 }

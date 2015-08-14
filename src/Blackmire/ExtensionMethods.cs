@@ -55,6 +55,11 @@ namespace Blackmire
       return self != null && !self.Any();
     }
 
+    /// <summary>
+    /// Returns the default C++ value for a specific .NET type.
+    /// </summary>
+    /// <param name="s"></param>
+    /// <returns></returns>
     public static string GetDefaultValue(this ITypeSymbol s)
     {
       switch (s.TypeKind)
@@ -231,8 +236,10 @@ namespace Blackmire
                 return "boost::date";
               case "NullPointerException":
                 return "std::invalid_argument";
+              case "StringBuilder":
+                return "std::ostringstream";
               default:
-                return string.Format("std::shared_ptr<{0}>", metaName);
+                return $"std::shared_ptr<{metaName}>";
             }
             
           }

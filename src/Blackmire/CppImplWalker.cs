@@ -37,6 +37,14 @@ namespace Blackmire
           .Append(args.GetText().ToString().Trim('(', ')').Replace(" + ", " << ").Replace("+", " << "))
           .AppendLine(" << endl;");
       }
+      else if (s.StartsWith("Environment.Exit"))
+      {
+        var ise = node.Expression as InvocationExpressionSyntax;
+        var args = ise.ArgumentList;
+        cb.AppendWithIndent("exit(")
+          .Append(args.GetText().ToString().Trim('(', ')'))
+          .AppendLine(");");
+      }
       else
       {
         base.VisitExpressionStatement(node);
@@ -166,6 +174,11 @@ namespace Blackmire
       cb.Append(";");
     }
 
+    public override void VisitSwitchSection(SwitchSectionSyntax node)
+    {
+      
+    }
+
     public override void VisitUsingDirective(UsingDirectiveSyntax node)
     {
       
@@ -274,6 +287,8 @@ namespace Blackmire
       {
         base.VisitMethodDeclaration(node);
       });
+
+      cb.AppendLine(); // put a blank line after the method
     }
     
     
