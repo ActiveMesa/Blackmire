@@ -75,9 +75,9 @@ namespace Blackmire
       var tree = CSharpSyntaxTree.ParseText(((TextBox) sender).Text);
       var compilation = CSharpCompilation.Create("blackmire")
         .WithOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
-        .WithReferences(MetadataReference.CreateFromAssembly(typeof (System.Int32).Assembly))
+        .WithReferences(MetadataReference.CreateFromFile(typeof (Int32).Assembly.Location))
         .AddSyntaxTrees(tree);
-      var model = compilation.GetSemanticModel(tree);
+      var model = compilation.GetSemanticModel(tree, true);
       var settings = new ConversionSettings();
       var hw = new CppHeaderWalker(compilation, model, settings);
       hw.Visit(tree.GetRoot());

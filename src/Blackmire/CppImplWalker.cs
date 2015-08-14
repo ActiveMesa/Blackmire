@@ -219,7 +219,7 @@ namespace Blackmire
 
     public override void VisitLiteralExpression(LiteralExpressionSyntax node)
     {
-      if (node.CSharpKind() == SyntaxKind.StringLiteralExpression)
+      if (node.Kind() == SyntaxKind.StringLiteralExpression)
         cb.Append("std::string(").Append(node.ToString()).Append(")");
       else 
         cb.Append(node.ToString());

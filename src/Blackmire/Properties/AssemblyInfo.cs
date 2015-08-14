@@ -6,11 +6,11 @@ using System.Windows;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Blackmire")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("C# to C++ Converter")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Blackmire")]
-[assembly: AssemblyCopyright("Copyright ©  2014")]
+[assembly: AssemblyCopyright("Copyright © ActiveMesa, 2014-2015, http://activemesa.com")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
