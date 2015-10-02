@@ -20,7 +20,7 @@ namespace Blackmire
     {
       foreach (var field in f.Declaration.Variables)
       {
-        var s = (IFieldSymbol) sm.GetDeclaredSymbol(field);
+        var s = (IFieldSymbol)sm.GetDeclaredSymbol(field);
         if (!s.IsStatic && !s.Type.IsReferenceType)
           return true;
       }
@@ -68,8 +68,9 @@ namespace Blackmire
           break;
         case TypeKind.Array:
         {
-          return "nullptr";
-        }
+          return null;
+            return "nullptr"; // not strictly correct
+          }
         case TypeKind.Class:
           break;
         case TypeKind.Delegate:
@@ -195,56 +196,64 @@ namespace Blackmire
       switch (s.TypeKind)
       {
         case TypeKind.Array:
-        {
-          var a = s as IArrayTypeSymbol;
-          return a.ElementType.ToCppType() + "*"; // ugly!
-        }
+          {
+            var a = s as IArrayTypeSymbol;
+            if (a != null)
+              return $"std::vector<{a.ElementType.ToCppType()}>";
+            else
+            {
+              // no idea what kind of an array this is
+              return "std::vector<boost::any>";
+            }
+          }
       }
 
       switch (s.SpecialType)
       {
         case SpecialType.None:
-        {
-          string metaName = s.MetadataName;
-          string knownGeneric = metaName.KnownGenericType();
-          if (knownGeneric != metaName)
           {
-            // this is a generic type, so...
-            var sb = new StringBuilder();
-            sb.Append(knownGeneric).Append("<");
-
-            var nts = s as INamedTypeSymbol;
-            if (nts != null)
+            string metaName = s.MetadataName;
+            string knownGeneric = metaName.KnownGenericType();
+            if (knownGeneric != metaName)
             {
-              for (int i = 0; i < nts.TypeArguments.Length; ++i)
+              // this is a generic type, so...
+              var sb = new StringBuilder();
+              sb.Append(knownGeneric).Append("<");
+
+              var nts = s as INamedTypeSymbol;
+              if (nts != null)
               {
-                var arg = nts.TypeArguments[i];
-                sb.Append(arg.ToCppType());
-                if (i + 1 != nts.TypeArguments.Length)
-                  sb.Append(", ");
+                for (int i = 0; i < nts.TypeArguments.Length; ++i)
+                {
+                  var arg = nts.TypeArguments[i];
+                  sb.Append(arg.ToCppType());
+                  if (i + 1 != nts.TypeArguments.Length)
+                    sb.Append(", ");
+                }
               }
-            }
 
-            sb.Append(">");
-            return sb.ToString();
-          }
-          if (s.IsReferenceType)
-          {
-            switch (s.MetadataName)
-            {
-              case "DateTime":
-                return "boost::date";
-              case "NullPointerException":
-                return "std::invalid_argument";
-              case "StringBuilder":
-                return "std::ostringstream";
-              default:
-                return $"std::shared_ptr<{metaName}>";
+              sb.Append(">");
+              return sb.ToString();
             }
-            
+            if (s.IsReferenceType)
+            {
+              switch (s.MetadataName)
+              {
+                case "DateTime":
+                  return "boost::date";
+                case "NullPointerException":
+                  return "std::invalid_argument";
+                case "StringBuilder":
+                  return "std::ostringstream";
+                case "ArrayList":
+                  return "std::vector<boost::any>"; // highly inefficient
+                default:
+                  return $"std::shared_ptr<{metaName}>";
+              }
+
+            }
+            return metaName;
           }
-          return metaName;
-        }
         case SpecialType.System_Object:
           break;
         case SpecialType.System_Enum:

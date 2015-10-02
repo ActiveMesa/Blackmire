@@ -133,14 +133,14 @@ namespace Blackmire
       var builder = tcb.GetBuilderFor(z.DeclaredAccessibility);
 
       builder.AppendWithIndent("__declspec(property(");
-      CodeBuilder getBuilder = null;
+      CodeBuilder getBuilder = null, setBuilder = null;
       if (z.GetMethod != null)
       {
         builder.Append("get=Get").Append(z.Name);
 
         getBuilder = new CodeBuilder(builder.IndentValue);
         getBuilder.AppendWithIndent(z.Type.ToCppType())
-          .Append("& ") // this is rather opinionated :) might rethink later
+          .Append(" ") // return by value
           .Append("Get")
           .Append(z.Name)
           .AppendLine("() const;");
@@ -149,6 +149,14 @@ namespace Blackmire
       {
         if (z.GetMethod != null) builder.Append(",");
         builder.Append("put=Set").Append(z.Name);
+
+        setBuilder = new CodeBuilder(builder.IndentValue);
+        setBuilder.AppendWithIndent("void ")
+          .Append("Set")
+          .Append(z.Name)
+          .Append("(")
+          .Append(z.Type.ToCppType())
+          .AppendLine(");");
       }
 
       builder.Append(")) ")
@@ -159,6 +167,9 @@ namespace Blackmire
 
       if (getBuilder != null)
         builder.Append(getBuilder.ToString());
+
+      if (setBuilder != null)
+        builder.Append(setBuilder.ToString());
     }
 
     public override void VisitInterfaceDeclaration(InterfaceDeclarationSyntax node)

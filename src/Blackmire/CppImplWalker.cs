@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Blackmire;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -48,6 +49,36 @@ namespace Blackmire
       else
       {
         base.VisitExpressionStatement(node);
+      }
+    }
+
+    public override void VisitVariableDeclaration(VariableDeclarationSyntax node)
+    {
+      // start with variable type
+      if (node.Type.IsVar)
+      {
+        // no idea
+        cb.AppendWithIndent("auto ");
+      }
+      else
+      {
+        var si = model.GetSymbolInfo(node.Type);
+        ITypeSymbol ts = (ITypeSymbol) si.Symbol;
+        cb.AppendWithIndent(ts.ToCppType()).Append(" ");
+      }
+
+      // now comes the name(s)
+      for (int i = 0; i < node.Variables.Count; ++i)
+      {
+        var v = node.Variables[i];
+        cb.Append(v.Identifier.Text);
+        if (v.Initializer != null)
+        {
+          cb.Append(" = ");
+          v.Initializer.Accept(this);
+        }
+
+        cb.AppendLine(i + 1 == node.Variables.Count ? ";" : ",");
       }
     }
 
@@ -192,6 +223,11 @@ namespace Blackmire
     public override void VisitParameter(ParameterSyntax node)
     {
       // nothing here, is this correct?
+    }
+
+    public override void VisitNamespaceDeclaration(NamespaceDeclarationSyntax node)
+    {
+      //base.VisitNamespaceDeclaration(node);
     }
 
     public override void VisitIdentifierName(IdentifierNameSyntax node)

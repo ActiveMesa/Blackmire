@@ -19,6 +19,22 @@ namespace Blackmire
     public MainWindow()
     {
       InitializeComponent();
+
+      InputBox.Text = @"namespace Foo.Bar
+{
+
+class C
+{
+
+  void foo()
+  {
+    int x = 0;
+  }
+
+}
+
+}
+";
     }
 
     private async void Button_Click(object sender, RoutedEventArgs e)
