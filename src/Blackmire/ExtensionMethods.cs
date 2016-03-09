@@ -70,7 +70,7 @@ namespace Blackmire
         {
           return null;
             return "nullptr"; // not strictly correct
-          }
+        }
         case TypeKind.Class:
           break;
         case TypeKind.Delegate:
@@ -287,7 +287,7 @@ namespace Blackmire
         case SpecialType.System_UInt64:
           return "uint64_t";
         case SpecialType.System_Decimal:
-          break;
+          return "/* Decimal types not supported */ double";
         case SpecialType.System_Single:
           return "float";
         case SpecialType.System_Double:

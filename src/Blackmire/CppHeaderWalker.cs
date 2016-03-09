@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -43,6 +44,39 @@ namespace Blackmire
         var parts = whatAreWeUsing.Split('.');
         cb.AppendIndent().Append("using namespace ").Append(string.Join("::", parts)).AppendLine(";");
       }
+    }
+
+    public override void VisitEnumDeclaration(EnumDeclarationSyntax node)
+    {
+      var name = node.Identifier.Text;
+      cb.Append("enum class ").AppendLine(name)
+        .Scope(() =>
+        {
+          base.VisitEnumDeclaration(node);
+        });
+
+      // now let's generate ostream& operator <<
+      cb.AppendLine("std::ostream& operator<<(std::ostream& os, const " + name + " obj)")
+        .Scope(() =>
+        {
+          cb.AppendLineWithIndent("switch (obj)")
+            .Scope(() =>
+            {
+              foreach (var enumCase in node.Members)
+              {
+                string caseName = enumCase.Identifier.Text;
+                // todo: string output needs to parse camelCase => "camel case"
+                cb.AppendWithIndent("case " + name + "::" + caseName + ": ")
+                  .AppendLine("os << \"" + Regex.Replace(caseName, @"(\B[A-Z]+?(?=[A-Z][^A-Z])|\B[A-Z]+?(?=[^A-Z]))", " $1").ToLowerInvariant() + "\"; break;");
+              }
+            });
+          cb.AppendLineWithIndent("return os;");
+        });
+    }
+
+    public override void VisitEnumMemberDeclaration(EnumMemberDeclarationSyntax node)
+    {
+      cb.AppendWithIndent(node.Identifier.Text).AppendLine(",");
     }
 
     public override void VisitNamespaceDeclaration(NamespaceDeclarationSyntax node)

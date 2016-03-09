@@ -23,14 +23,24 @@ namespace Blackmire
       InputBox.Text = @"namespace Foo.Bar
 {
 
-class C
+class Person
 {
+  int ssn;
+
+  public string Name { get; private set; }
 
   void foo()
   {
     int x = 0;
   }
 
+}
+
+enum Color
+{
+  Red,
+  Green,
+  LightBlue
 }
 
 }

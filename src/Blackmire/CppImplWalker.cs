@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Blackmire;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -18,12 +17,12 @@ namespace Blackmire
 
     public override void VisitPropertyDeclaration(PropertyDeclarationSyntax node)
     {
-      
-    }
+      var z = model.GetDeclaredSymbol(node);
 
-    public override void VisitInitializerExpression(InitializerExpressionSyntax node)
-    {
-      base.VisitInitializerExpression(node);
+      if (z.GetMethod != null)
+      {
+        cb.Append(z.Type.ToCppType());
+      }
     }
 
     public override void VisitExpressionStatement(ExpressionStatementSyntax node)
@@ -84,6 +83,10 @@ namespace Blackmire
 
     public override void VisitClassDeclaration(ClassDeclarationSyntax node)
     {
+      // be sure to add the includes
+      cb.AppendLine($"#include <{node.Identifier.Text}.h>")
+        .AppendLine();
+
       // generate empty ctor if necessary
       if (node.HasInitializableMembers(model) && !node.HasDefaultConstructor())
       {
@@ -223,11 +226,6 @@ namespace Blackmire
     public override void VisitParameter(ParameterSyntax node)
     {
       // nothing here, is this correct?
-    }
-
-    public override void VisitNamespaceDeclaration(NamespaceDeclarationSyntax node)
-    {
-      //base.VisitNamespaceDeclaration(node);
     }
 
     public override void VisitIdentifierName(IdentifierNameSyntax node)
