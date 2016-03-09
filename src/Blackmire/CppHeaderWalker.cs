@@ -193,8 +193,8 @@ namespace Blackmire
           .AppendLine(");");
       }
 
-      builder.Append(")) ")
-        .Append(z.Type.ToCppType())
+      builder.AppendLine(")) ")
+        .AppendWithIndent(z.Type.ToCppType())
         .Append(" ")
         .Append(z.Name)
         .AppendLine(";");

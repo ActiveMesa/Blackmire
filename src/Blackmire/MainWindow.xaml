@@ -5,7 +5,7 @@
   <Grid>
     <Grid.Resources>
       <Style x:Key="TextBoxStyle" TargetType="TextBox">
-        <Setter Property="FontFamily" Value="Consolas" />
+        <Setter Property="FontFamily" Value="Lucida Console" />
         <Setter Property="FontSize" Value="18"></Setter>
       </Style>
     </Grid.Resources>

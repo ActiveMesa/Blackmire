@@ -43,6 +43,12 @@ enum Color
   LightBlue
 }
 
+class Color<T>
+{
+  static Color<T> Red = new Color<T>();
+  public T a,r,g,b;
+}
+
 }
 ";
     }

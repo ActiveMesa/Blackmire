@@ -191,6 +191,20 @@ namespace Blackmire
       return null;
     }
 
+    public static bool HasAttribute(this FieldDeclarationSyntax s, string attributeName)
+    {
+      foreach (var al in s.AttributeLists)
+      {
+        foreach (var a in al.Attributes)
+        {
+          if (a.Name.GetText().ToString() == attributeName)
+            return true;
+        }
+      }
+
+      return false;
+    }
+
     public static string ToCppType(this ITypeSymbol s)
     {
       switch (s.TypeKind)
@@ -343,6 +357,19 @@ namespace Blackmire
         default:
           throw new ArgumentOutOfRangeException();
       }
+
+      var nt = s as INamedTypeSymbol;
+      if (nt != null)
+      {
+        var sb = new StringBuilder(s.Name);
+        for (int i = 0; i < nt.TypeArguments.Length; i++)
+        {
+          sb.Append(nt.TypeArguments[i].Name);
+          if (i + 1 != nt.TypeArguments.Length)
+            sb.Append(",");
+        }
+      }
+
       return s.Name;
     }
   }

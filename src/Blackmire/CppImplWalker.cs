@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -63,7 +64,16 @@ namespace Blackmire
       {
         var si = model.GetSymbolInfo(node.Type);
         ITypeSymbol ts = (ITypeSymbol) si.Symbol;
-        cb.AppendWithIndent(ts.ToCppType()).Append(" ");
+        if (ts != null)
+          cb.AppendWithIndent(ts.ToCppType()).Append(" ");
+        else
+        {
+          var n = node.Type as IdentifierNameSyntax;
+          if (n != null)
+          {
+            cb.AppendWithIndent(n.Identifier.Text).Append(" ");
+          }
+        }
       }
 
       // now comes the name(s)
@@ -111,12 +121,43 @@ namespace Blackmire
           var z = (IFieldSymbol)model.GetDeclaredSymbol(v);
           if (z.IsStatic && v.Initializer != null)
           {
+            var cppType = z.Type.ToCppType();
+
+            string initExpression;
+            if (cppType.Contains("shared_ptr"))
+            {
+              var argumentList = new StringBuilder();
+
+              var evcs = v.Initializer as EqualsValueClauseSyntax;
+              if (evcs != null)
+              {
+                var oces = evcs.Value as ObjectCreationExpressionSyntax;
+                if (oces != null)
+                {
+                  var count = oces.ArgumentList.Arguments.Count;
+                  for (int i = 0; i < count; i++)
+                  {
+                    var a = oces.ArgumentList.Arguments[i];
+                    argumentList.Append(a.ToFullString());
+                    if (i + 1 != count)
+                      argumentList.Append(",");
+                  }
+                }
+              }
+
+              initExpression = $"std::make_shared<{z.Type.Name}>({argumentList})";
+            }
+            else
+            {
+              initExpression = v.Initializer.Value.ToString();
+            }
+
             cb.AppendWithIndent("extern ")
               .Append(node.Identifier.ToString())
               .Append("::")
               .Append(v.Identifier.ToString())
               .Append(" = ")
-              .Append(v.Initializer.Value.ToString())
+              .Append(initExpression)
               .AppendLine(";").AppendLine();
           }
         }
@@ -303,6 +344,7 @@ namespace Blackmire
       
       // get owner name, eh? this might not be a class, though
       var parent = node.Parent as ClassDeclarationSyntax;
+      if (parent == null) return;
       cb.Append(parent.Identifier.Text).Append("::");
       cb.Append(node.Identifier.ToString());
       cb.Append("(");
