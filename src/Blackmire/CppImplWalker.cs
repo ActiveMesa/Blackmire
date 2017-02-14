@@ -10,6 +10,7 @@ namespace Blackmire
 {
   public class CppImplWalker : CppWalker
   {
+    // the code builder
     private readonly CodeBuilder cb = new CodeBuilder();
 
     public CppImplWalker(CSharpCompilation compilation, SemanticModel model, ConversionSettings settings) : base(compilation, model, settings)
